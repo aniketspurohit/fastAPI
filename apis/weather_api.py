@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 import httpx
 import fastapi
 
@@ -8,7 +8,7 @@ from models.umbrella_status import UmbrellaStatus
 router = fastapi.APIRouter()
 
 
-@router.get("/api/umbrella", response_model=Location)
+@router.get("/api/umbrella", response_model=UmbrellaStatus)
 async def need_an_umbrella(location: Location = fastapi.Depends()):
     url = f"https://weather.talkpython.fm/api/weather?city={location.city}&country={location.country}&units=imperial"
 
@@ -25,12 +25,15 @@ async def need_an_umbrella(location: Location = fastapi.Depends()):
     forecast = data.get("forecast", {})
     temp = forecast.get("temp", 0.0)
 
-    bring = category.lower().strip() == "rain"
+    if category.lower().strip() == "rain":
+        bring = True
+    else:
+        bring = False
 
     # try:
     #     return UmbrellaStatus(bring_umbrella=bring, temp=temp)
     # except ValidationError as e:
     #     print(e)
 
-    u = UmbrellaStatus(bring_umbrella=bring, temp=temp).json()
+    u = UmbrellaStatus(bring_umbrella=bring, temp=temp)
     return u
